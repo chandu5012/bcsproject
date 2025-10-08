@@ -1,0 +1,3073 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wells Fargo Data Management Platform</title>
+    <meta name="description" content="Enterprise Data Operations Platform" />
+    <meta name="author" content="Wells Fargo" />
+
+    <meta property="og:title" content="Wells Fargo Data Management Platform" />
+    <meta
+      property="og:description"
+      content="Enterprise Data Operations Platform"
+    />
+    <meta property="og:type" content="website" />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style3.css') }}"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+  </head>
+  <body>
+    <div class="min-h-screen bg-gray-50">
+      <!-- Header - Matching React Component -->
+      <header class="wells-fargo-gradient text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="bg-white rounded-lg p-2">
+                <div
+                  class="wells-fargo-logo text-wellsfargo-red text-2xl font-bold"
+                >
+                  WELLS FARGO
+                </div>
+                <div class="text-xs text-gray-600 mt-1">
+                  Data Management Platform
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <h1 class="text-xl font-semibold">Enterprise Data Operations</h1>
+              <p class="text-wellsfargo-lightgold text-sm">
+                Secure • Reliable • Scalable
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="container mx-auto px-6 py-8">
+        <div class="mb-8 text-center">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">
+            🔧 Data Management Operations
+          </h2>
+          <p class="text-gray-600">
+            Streamline your data operations with enterprise-grade tools
+          </p>
+        </div>
+
+        <!-- Tabs - Updated to 5 tabs -->
+        <div class="tabs w-full">
+          <div
+            class="tab-buttons grid w-full grid-cols-5 mb-8 bg-white border border-gray-200 rounded-lg shadow-sm"
+          >
+            <button class="tab-button active" data-tab="comparison">
+              Data Comparison
+            </button>
+            <button class="tab-button" data-tab="load">Data Load</button>
+            <button class="tab-button" data-tab="schema">
+              Schema Generation
+            </button>
+            <button class="tab-button" data-tab="fileload">File Load</button>
+            <button class="tab-button" data-tab="filedownload">
+              File Download
+            </button>
+          </div>
+
+          <!-- Data Comparison Tab -->
+          <div
+            id="comparison"
+            class="tab-content active space-y-6 animate-fade-in"
+          >
+            <div
+              class="card border-t-4 border-t-wellsfargo-red"
+              id="comparison-card"
+            >
+              <div class="card-header">
+                <h3 class="text-wellsfargo-red text-xl" id="comparison-heading">
+                  Data Comparison
+                </h3>
+                <p class="text-lg">
+                  Compare data between source and target systems to identify
+                  discrepancies and ensure data integrity.
+                </p>
+              </div>
+              <div class="card-content">
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-semibold text-blue-800 mb-2">
+                    Comparison Features:
+                  </h4>
+                  <ul class="text-sm text-blue-700 space-y-1">
+                    <li>• Row count validation</li>
+                    <li>• Schema structure comparison</li>
+                    <li>• Data type validation</li>
+                    <li>• Value-level comparison with diff reporting</li>
+                    <li>
+                      • File-to-file, file-to-database, and database-to-file
+                      comparisons
+                    </li>
+                    <li>
+                      • Support for CSV, Excel, JSON, Parquet, XML, and
+                      delimited files
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Comparison Type Selection -->
+                <div
+                  class="mb-6 p-4 border rounded-lg bg-gradient-to-r from-gray-50 to-blue-50"
+                >
+                  <label class="text-base font-semibold mb-3 block"
+                    >🔄 Comparison Type</label
+                  >
+                  <select
+                    id="comparison-type-select"
+                    class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                  >
+                    <option value="">Select comparison type</option>
+                    <option value="file-to-file">File to File</option>
+                    <option value="file-to-database">File to Database</option>
+                    <option value="database-to-file">Database to File</option>
+                    <option value="database-to-database">
+                      Database to Database
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Table Mode Selection - Only for Database to Database -->
+                <div
+                  class="mb-6 p-4 border rounded-lg bg-gray-50"
+                  id="table-mode-selection"
+                  style="display: none"
+                >
+                  <label class="text-base font-semibold mb-3 block"
+                    >📊 Table Comparison Mode</label
+                  >
+                  <div class="radio-group flex gap-6">
+                    <div class="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="tableMode"
+                        value="single"
+                        id="single"
+                        checked
+                      />
+                      <label for="single">Single Table</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="tableMode"
+                        value="multi"
+                        id="multi"
+                      />
+                      <label for="multi">Multi Table</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dynamic form will be inserted here -->
+                <div id="comparison-form"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Load Tab -->
+          <div id="load" class="tab-content space-y-6">
+            <div
+              class="card border-t-4 border-t-wellsfargo-gold"
+              id="load-card"
+            >
+              <div class="card-header">
+                <h3 class="text-wellsfargo-gold text-xl" id="load-heading">
+                  Data Load
+                </h3>
+                <p class="text-lg">
+                  Transfer and load data from source systems to target
+                  destinations with robust error handling.
+                </p>
+              </div>
+              <div class="card-content">
+                <div class="bg-green-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-semibold text-green-800 mb-2">
+                    Load Capabilities:
+                  </h4>
+                  <ul class="text-sm text-green-700 space-y-1">
+                    <li>• Incremental and full data loads</li>
+                    <li>• Batch processing with configurable sizes</li>
+                    <li>• Error logging and recovery mechanisms</li>
+                    <li>• Real-time progress monitoring</li>
+                  </ul>
+                </div>
+                <div id="load-form"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema Generation Tab -->
+          <div id="schema" class="tab-content space-y-6">
+            <div class="card border-t-4 border-t-purple-500" id="schema-card">
+              <div class="card-header">
+                <h3 class="text-purple-700 text-xl" id="schema-heading">
+                  Schema Generation
+                </h3>
+                <p class="text-lg">
+                  Automatically generate database schemas and DDL scripts based
+                  on source system analysis.
+                </p>
+              </div>
+              <div class="card-content">
+                <div class="bg-purple-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-semibold text-purple-800 mb-2">
+                    Generation Features:
+                  </h4>
+                  <ul class="text-sm text-purple-700 space-y-1">
+                    <li>• Automatic DDL script generation</li>
+                    <li>• Index and constraint creation</li>
+                    <li>• Data type mapping and optimization</li>
+                    <li>• Schema validation and best practices</li>
+                  </ul>
+                </div>
+                <div id="schema-form"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Load Tab -->
+          <div id="fileload" class="tab-content space-y-6">
+            <div class="card border-t-4 border-t-orange-500" id="fileload-card">
+              <div class="card-header">
+                <h3 class="text-orange-700 text-xl" id="fileload-heading">
+                  File Load
+                </h3>
+                <p class="text-lg">
+                  Load data from various file formats (CSV, JSON, XML, Parquet)
+                  into target database systems.
+                </p>
+              </div>
+              <div class="card-content">
+                <div class="bg-orange-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-semibold text-orange-800 mb-2">
+                    Supported Formats:
+                  </h4>
+                  <ul class="text-sm text-orange-700 space-y-1">
+                    <li>• CSV with custom delimiters and encoding</li>
+                    <li>• JSON with nested object support</li>
+                    <li>• XML with XPath parsing</li>
+                    <li>• Parquet with columnar optimization</li>
+                  </ul>
+                </div>
+                <div id="fileload-form"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Download Tab -->
+          <div id="filedownload" class="tab-content space-y-6">
+            <div
+              class="card border-t-4 border-t-green-500"
+              id="filedownload-card"
+            >
+              <div class="card-header">
+                <h3 class="text-green-700 text-xl" id="filedownload-heading">
+                  File Download
+                </h3>
+                <p class="text-lg">
+                  Download files from remote servers and transfer them to target
+                  destinations securely.
+                </p>
+              </div>
+              <div class="card-content">
+                <div class="bg-green-50 p-4 rounded-lg mb-6">
+                  <h4 class="font-semibold text-green-800 mb-2">
+                    Download Features:
+                  </h4>
+                  <ul class="text-sm text-green-700 space-y-1">
+                    <li>• Secure file transfer protocols (SFTP, SCP)</li>
+                    <li>• Batch file download capabilities</li>
+                    <li>• File integrity verification</li>
+                    <li>• Resume interrupted downloads</li>
+                  </ul>
+                </div>
+                <div id="filedownload-form"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log Display Section -->
+        <div class="log-section space-y-6">
+          <div class="card">
+            <div class="log-header card-header">
+              <h3 class="text-lg font-semibold">🔍 Real-time Operation Logs</h3>
+              <div class="log-controls flex items-center gap-2">
+                <span
+                  id="connection-status"
+                  class="status-indicator flex items-center gap-2"
+                >
+                  <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  Disconnected
+                </span>
+                <button id="pause-logs" class="btn-secondary">Pause</button>
+                <button id="clear-logs" class="btn-secondary">Clear</button>
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="log-container">
+                <div
+                  id="log-display"
+                  class="log-display h-64 overflow-y-auto border rounded p-4 bg-gray-50"
+                >
+                  <div class="log-placeholder text-gray-500">
+                    Logs will appear here when operations are executed...
+                  </div>
+                </div>
+                <div
+                  id="paused-indicator"
+                  class="paused-indicator hidden mt-2 text-sm text-yellow-600"
+                >
+                  ⏸️ Log updates paused
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Download Report Button Section -->
+        <div class="mt-6 flex justify-center">
+          <button
+            id="download-report-btn"
+            class="download-report-button"
+            disabled
+          >
+            <svg
+              id="download-icon"
+              class="download-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <svg
+              id="check-icon"
+              class="check-icon hidden"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span id="download-btn-text">Waiting for Comparison...</span>
+          </button>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-6 text-center">
+          <p class="text-sm">
+            Wells Fargo Data Management Platform © 2024 - Secure, Compliant,
+            Enterprise-Ready
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script3.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/file-compare-functions.js') }}"></script>
+  </body>
+</html>
+
+=============================================================
+/* Wells Fargo Brand Colors and Design System */
+:root {
+  --wf-red: #d50000;
+  --wf-gold: #ffd100;
+  --wf-dark-red: #b71c1c;
+  --wf-light-gold: #fff350;
+  --wf-dark-gold: #f57f17;
+
+  /* Semantic tokens matching React design system */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 0 100% 42%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --border: 214.3 31.8% 91.4%;
+  --radius: 0.5rem;
+}
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+/* Header Styles - Matching React */
+.wells-fargo-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--wf-red) 0%,
+    var(--wf-dark-red) 50%,
+    var(--wf-gold) 100%
+  );
+}
+
+.wells-fargo-logo {
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  letter-spacing: -0.5px;
+}
+
+.text-wellsfargo-red {
+  color: var(--wf-red);
+}
+
+.text-wellsfargo-lightgold {
+  color: var(--wf-light-gold);
+}
+
+.text-wellsfargo-gold {
+  color: var(--wf-gold);
+}
+
+.text-wellsfargo-darkred {
+  color: var(--wf-dark-red);
+}
+
+.text-gray-700 {
+  color: #374151;
+}
+
+/* Utility classes matching Tailwind */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.py-6 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.space-x-4 > * + * {
+  margin-left: 1rem;
+}
+.space-y-1 > * + * {
+  margin-top: 0.25rem;
+}
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+.bg-white {
+  background-color: white;
+}
+.text-white {
+  color: white;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.text-gray-600 {
+  color: #4b5563;
+}
+.text-gray-800 {
+  color: #1f2937;
+}
+.text-gray-500 {
+  color: #6b7280;
+}
+.text-yellow-600 {
+  color: #d97706;
+}
+.text-green-600 {
+  color: #059669;
+}
+.text-blue-800 {
+  color: #1e40af;
+}
+.text-blue-700 {
+  color: #1d4ed8;
+}
+.text-green-800 {
+  color: #166534;
+}
+.text-green-700 {
+  color: #15803d;
+}
+.text-purple-800 {
+  color: #6b21a8;
+}
+.text-purple-700 {
+  color: #7c3aed;
+}
+.text-orange-800 {
+  color: #9a3412;
+}
+.text-orange-700 {
+  color: #c2410c;
+}
+.mt-1 {
+  margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mt-12 {
+  margin-top: 3rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+.mb-8 {
+  margin-bottom: 2rem;
+}
+.mr-2 {
+  margin-right: 0.5rem;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
+.bg-gray-800 {
+  background-color: #1f2937;
+}
+.bg-blue-50 {
+  background-color: #eff6ff;
+}
+.bg-green-50 {
+  background-color: #f0fdf4;
+}
+.bg-purple-50 {
+  background-color: #faf5ff;
+}
+.bg-orange-50 {
+  background-color: #fff7ed;
+}
+.w-full {
+  width: 100%;
+}
+.w-2 {
+  width: 0.5rem;
+}
+.w-3 {
+  width: 0.75rem;
+}
+.h-64 {
+  height: 16rem;
+}
+.h-2 {
+  height: 0.5rem;
+}
+.h-3 {
+  height: 0.75rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.border {
+  border-width: 1px;
+  border-color: #e5e7eb;
+}
+.border-t {
+  border-top-width: 1px;
+}
+.border-gray-200 {
+  border-color: #e5e7eb;
+}
+.border-t-4 {
+  border-top-width: 4px !important;
+  border-top-style: solid !important;
+}
+.border-t-wellsfargo-red {
+  border-top-color: var(--wf-red);
+}
+.border-t-wellsfargo-gold {
+  border-top-color: var(--wf-gold);
+}
+.border-t-purple-500 {
+  border-top-color: #8b5cf6;
+}
+.border-t-orange-500 {
+  border-top-color: #f97316;
+}
+.border-t-green-500 {
+  border-top-color: #10b981;
+}
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+.block {
+  display: block;
+}
+.hidden {
+  display: none;
+}
+.bg-gray-400 {
+  background-color: #9ca3af;
+}
+.bg-green-500 {
+  background-color: #10b981;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.grid {
+  display: grid;
+}
+.grid-cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+.lg\:grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* Tab Styles - Matching React grid layout */
+.tabs {
+  margin-bottom: 2rem;
+}
+
+.tab-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #6b7280;
+  border-radius: 0;
+  position: relative;
+}
+
+.tab-button:first-child {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+
+.tab-button:last-child {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.tab-button:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.tab-button.active {
+  background: var(--wf-red);
+  color: white;
+  font-weight: 600;
+  border: 2px solid var(--wf-red);
+  box-shadow: 0 0 0 2px rgba(213, 0, 0, 0.2);
+  z-index: 1;
+  position: relative;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Card Styles - Enhanced with border top */
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* Source and Target Cards with Enhanced Styling */
+.source-target-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(213, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.source-target-card:hover {
+  border-color: rgba(213, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.shadow-elevated {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(213, 0, 0, 0.1);
+}
+
+.source-target-card:hover.shadow-elevated {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(213, 0, 0, 0.15);
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.gradient-header {
+  background: linear-gradient(
+    135deg,
+    rgba(213, 0, 0, 0.1) 0%,
+    rgba(255, 209, 0, 0.1) 100%
+  );
+}
+
+.card-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.card-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+/* Radio group styles */
+.radio-group input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--wf-red);
+}
+
+.radio-group label {
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+}
+
+/* Form styles */
+.form-input,
+.form-select,
+.form-textarea,
+.form-file {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--wf-red);
+  box-shadow: 0 0 0 3px rgba(213, 0, 0, 0.1);
+}
+
+/* Button styles */
+.btn-secondary {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.execute-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(to right, #dc2626, #b91c1c);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.execute-button:hover:not(:disabled) {
+  background: linear-gradient(to right, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.execute-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Log styles */
+.log-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.log-display {
+  height: 16rem;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.875rem;
+}
+
+.log-entry {
+  margin-bottom: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease;
+}
+
+.log-entry:hover {
+  background-color: #f3f4f6;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fix oversized images and SVGs */
+.unix-server-section svg,
+.card-header svg,
+img {
+  max-width: 24px;
+  max-height: 24px;
+  width: auto;
+  height: auto;
+}
+
+/* Unix Configuration */
+.unix-server-section {
+  margin: 2rem 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tab-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .lg\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Download Report Button Styles */
+.download-report-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #d50000 0%, #b71c1c 50%, #ffd100 100%);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(213, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.download-report-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.download-report-button:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.download-report-button.enabled:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 25px -5px rgba(213, 0, 0, 0.4);
+}
+
+.download-report-button.enabled:hover::before {
+  left: 100%;
+}
+
+.download-report-button.enabled:active {
+  transform: translateY(0) scale(1.02);
+}
+
+.download-icon,
+.check-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.download-report-button.enabled .download-icon {
+  animation: bounce 1s infinite;
+}
+
+.check-icon {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Center alignment for button */
+.flex.justify-center {
+  display: flex;
+  justify-content: center;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+====================================================
+================================================
+// Global variables
+console.log("JavaScript file loaded successfully");
+let socket = null;
+let isConnected = false;
+let isPaused = false;
+let logs = [];
+let currentTab = "comparison";
+let currentTableMode = "single";
+let jobComplete = false;
+let reportUrl = "";
+
+// Database configurations matching React component
+const databaseConfigs = {
+  PostgreSQL: {
+    hosts: ["localhost", "postgres-server.local", "db.example.com"],
+    ports: ["5432", "5433", "5434"],
+    usernames: ["postgres", "admin", "dbuser"],
+    databases: ["postgres", "myapp_db", "production_db", "staging_db"],
+  },
+  MySQL: {
+    hosts: ["localhost", "mysql-server.local", "db.example.com"],
+    ports: ["3306", "3307", "3308"],
+    usernames: ["root", "mysql", "admin", "dbuser"],
+    databases: ["mysql", "myapp_db", "production_db", "staging_db"],
+  },
+  Oracle: {
+    hosts: ["localhost", "oracle-server.local", "db.example.com"],
+    ports: ["1521", "1522", "1523"],
+    usernames: ["system", "oracle", "admin", "dbuser"],
+    databases: ["XE", "ORCL", "ORCLPDB", "production_db"],
+  },
+  "SQL Server": {
+    hosts: ["localhost", "sqlserver.local", "db.example.com"],
+    ports: ["1433", "1434", "1435"],
+    usernames: ["sa", "admin", "dbuser"],
+    databases: ["master", "myapp_db", "production_db", "staging_db"],
+  },
+  MongoDB: {
+    hosts: ["localhost", "mongo-server.local", "db.example.com"],
+    ports: ["27017", "27018", "27019"],
+    usernames: ["admin", "root", "mongouser"],
+    databases: ["admin", "myapp_db", "production_db", "staging_db"],
+  },
+  Snowflake: {
+    hosts: [
+      "account.snowflakecomputing.com",
+      "account.us-east-1.snowflakecomputing.com",
+    ],
+    ports: ["443"],
+    usernames: ["admin", "snowflake_user"],
+    databases: ["DEMO_DB", "PRODUCTION_DB", "STAGING_DB", "ANALYTICS_DB"],
+  },
+};
+
+const databaseTypes = [
+  "PostgreSQL",
+  "MySQL",
+  "Oracle",
+  "SQL Server",
+  "MongoDB",
+  "Snowflake",
+  "File",
+];
+
+// Initialize when page loads
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("Data Management Platform loaded");
+  console.log("Starting initialization...");
+
+  // Initialize tab switching
+  console.log("Initializing tabs...");
+  initializeTabs();
+
+  // Initialize log controls
+  console.log("Initializing log controls...");
+  initializeLogControls();
+
+  // Initialize table mode selection
+  console.log("Initializing table mode selection...");
+  initializeTableModeSelection();
+
+  // Generate initial forms
+  console.log("Generating comparison form...");
+  generateComparisonForm();
+  console.log("Generating data load form...");
+  generateDataLoadForm();
+  console.log("Generating schema generation form...");
+  generateSchemaGenerationForm();
+  console.log("Generating file load form...");
+  generateFileLoadForm();
+  console.log("Generating file download form...");
+  generateFileDownloadForm();
+
+  // Initialize WebSocket connection
+  console.log("Initializing WebSocket...");
+  initializeWebSocket();
+
+  // Initialize comparison type selection
+  console.log("Initializing comparison type selection...");
+  initializeComparisonTypeSelection();
+
+  console.log("Initialization complete");
+});
+
+// Initialize table mode selection functionality
+function initializeTableModeSelection() {
+  const radioButtons = document.querySelectorAll('input[name="tableMode"]');
+  radioButtons.forEach((radio) => {
+    radio.addEventListener("change", function () {
+      currentTableMode = this.value;
+      console.log("Table mode changed to:", currentTableMode);
+      handleTableModeChange(this.value);
+    });
+  });
+}
+
+// Initialize comparison type selection functionality
+function initializeComparisonTypeSelection() {
+  const comparisonTypeSelect = document.getElementById(
+    "comparison-type-select"
+  );
+  if (comparisonTypeSelect) {
+    comparisonTypeSelect.addEventListener("change", function () {
+      const selectedType = this.value;
+      console.log("Comparison type changed to:", selectedType);
+      handleComparisonTypeChange(selectedType);
+    });
+  }
+}
+
+// Handle comparison type changes
+function handleComparisonTypeChange(comparisonType) {
+  const tableModeSection = document.getElementById("table-mode-selection");
+  const comparisonForm = document.getElementById("comparison-form");
+
+  // Show table mode selection only for database-to-database
+  if (comparisonType === "database-to-database") {
+    tableModeSection.style.display = "block";
+  } else {
+    tableModeSection.style.display = "none";
+  }
+
+  // Regenerate the comparison form based on the selected type
+  if (comparisonType) {
+    generateComparisonFormByType(comparisonType);
+  } else {
+    comparisonForm.innerHTML =
+      '<p class="text-gray-500 text-center py-4">Please select a comparison type to continue</p>';
+  }
+}
+
+// Tab switching functionality
+function initializeTabs() {
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  console.log("Found tab buttons:", tabButtons.length);
+  console.log("Found tab contents:", tabContents.length);
+
+  tabButtons.forEach((button) => {
+    console.log("Attaching event to button:", button.dataset.tab);
+    button.addEventListener("click", function () {
+      const targetTab = this.dataset.tab;
+      console.log("Tab clicked:", targetTab);
+
+      // Remove active class from all buttons and contents
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabContents.forEach((content) => content.classList.remove("active"));
+
+      // Add active class to clicked button and corresponding content
+      this.classList.add("active");
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) {
+        targetContent.classList.add("active");
+        currentTab = targetTab;
+        console.log("Tab switched to:", targetTab);
+      } else {
+        console.error("Target content not found for tab:", targetTab);
+      }
+    });
+  });
+}
+
+// Generate enhanced dropdown with manual entry option
+function generateDropdownWithCustom(
+  id,
+  options,
+  placeholder,
+  currentValue = ""
+) {
+  const hasManualEntry = id.includes("Manual");
+
+  if (hasManualEntry) {
+    return `
+            <div class="input-with-dropdown">
+                <input type="text" 
+                       id="${id}" 
+                       class="form-input" 
+                       placeholder="${placeholder}" 
+                       value="${currentValue}"
+                       maxlength="1500">
+                <button type="button" 
+                        class="back-button" 
+                        onclick="switchToDropdown('${id}')">
+                    ← Back to dropdown
+                </button>
+            </div>
+        `;
+  }
+
+  return `
+        <select id="${id}" class="form-select">
+            <option value="">${placeholder}</option>
+            ${options
+              .map(
+                (option) =>
+                  `<option value="${option}" ${
+                    option === currentValue ? "selected" : ""
+                  }>${option}</option>`
+              )
+              .join("")}
+            <option value="custom">Enter manually...</option>
+        </select>
+    `;
+}
+
+// Handle dropdown to manual switch
+function handleDropdownChange(selectId, fieldType) {
+  const select = document.getElementById(selectId);
+  if (select.value === "custom") {
+    const manualId = selectId + "Manual";
+    const placeholder = `Enter custom ${fieldType}`;
+
+    select.parentElement.innerHTML = generateDropdownWithCustom(
+      manualId,
+      [],
+      placeholder
+    );
+
+    // Focus the new input
+    const newInput = document.getElementById(manualId);
+    if (newInput) {
+      newInput.focus();
+    }
+  }
+}
+
+// Switch back to dropdown from manual entry
+function switchToDropdown(manualId) {
+  const input = document.getElementById(manualId);
+  const baseId = manualId.replace("Manual", "");
+  const fieldType = getFieldType(baseId);
+  const dbType = getSelectedDatabaseType(baseId);
+
+  let options = [];
+  if (dbType && databaseConfigs[dbType]) {
+    if (fieldType === "host") options = databaseConfigs[dbType].hosts;
+    else if (fieldType === "port") options = databaseConfigs[dbType].ports;
+    else if (fieldType === "username")
+      options = databaseConfigs[dbType].usernames;
+    else if (fieldType === "database")
+      options = databaseConfigs[dbType].databases;
+  }
+
+  const placeholder = `Select ${fieldType}`;
+  input.parentElement.innerHTML = generateDropdownWithCustom(
+    baseId,
+    options,
+    placeholder
+  );
+
+  // Re-attach event listener
+  const newSelect = document.getElementById(baseId);
+  if (newSelect) {
+    newSelect.addEventListener("change", function () {
+      handleDropdownChange(this.id, fieldType);
+    });
+  }
+}
+
+// Get field type from ID
+function getFieldType(id) {
+  if (id.includes("Host")) return "host";
+  if (id.includes("Port")) return "port";
+  if (id.includes("Username")) return "username";
+  if (id.includes("Database")) return "database";
+  return "";
+}
+
+// Get selected database type for a field
+function getSelectedDatabaseType(fieldId) {
+  const prefix = fieldId.split(/Host|Port|Username|Database/)[0];
+  const typeSelectId = prefix + "Type";
+  const typeSelect = document.getElementById(typeSelectId);
+  return typeSelect ? typeSelect.value : "";
+}
+
+// Generate form fields for source or target
+function generateFormFields(prefix, isFileTab = false) {
+  const isSource = prefix.includes("source") || prefix.includes("Source");
+  const cardType = isSource ? "source" : "target";
+  const cardTitle = isSource ? "Source Configuration" : "Target Configuration";
+
+  return `
+        <div class="source-target-card border-t-4 border-t-wellsfargo-red shadow-elevated">
+            <div class="card-header gradient-header">
+                <h3 class="text-wellsfargo-red flex items-center gap-2">
+                    <div class="w-3 h-3 bg-wellsfargo-red rounded-full"></div>
+                    ${cardTitle}
+                </h3>
+                <p>Configure your data ${
+                  isSource ? "source" : "target"
+                } connection details</p>
+            </div>
+            <div class="config-content p-6 space-y-4">
+                <div class="form-group">
+                    <label for="${prefix}Type" class="block text-sm font-medium mb-2">🗄️ Database Type</label>
+                    <select id="${prefix}Type" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200">
+                        <option value="">Select database type</option>
+                        ${databaseTypes
+                          .map(
+                            (type) => `<option value="${type}">${type}</option>`
+                          )
+                          .join("")}
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="${prefix}Host" class="block text-sm font-medium mb-2">🌐 Host</label>
+                        <div id="${prefix}HostContainer">
+                            <input type="text" id="${prefix}Host" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="localhost" maxlength="1500">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="${prefix}Port" class="block text-sm font-medium mb-2">🔌 Port</label>
+                        <div id="${prefix}PortContainer">
+                            <input type="text" id="${prefix}Port" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="5432" maxlength="10">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}Database" class="block text-sm font-medium mb-2">💾 Database Name</label>
+                    <div id="${prefix}DatabaseContainer">
+                        <input type="text" id="${prefix}Database" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter database name" maxlength="255">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="${prefix}Username" class="block text-sm font-medium mb-2">👤 Username</label>
+                        <div id="${prefix}UsernameContainer">
+                            <input type="text" id="${prefix}Username" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter username" maxlength="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="${prefix}Password" class="block text-sm font-medium mb-2">🔒 Password</label>
+                        <input type="password" id="${prefix}Password" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter password" maxlength="100">
+                    </div>
+                </div>
+                
+                ${
+                  !isFileTab
+                    ? `
+                <div class="form-group">
+                    <label for="${prefix}TableName" class="block text-sm font-medium mb-2">📋 Table Name</label>
+                    <input type="text" id="${prefix}TableName" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter table name" maxlength="255">
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}PrimaryKey" class="block text-sm font-medium mb-2">🔑 Primary Key</label>
+                    <div class="primary-key-section">
+                        <select id="${prefix}PrimaryKey" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 mb-2">
+                            <option value="">Select primary key</option>
+                            <option value="id">id</option>
+                            <option value="user_id">user_id</option>
+                            <option value="customer_id">customer_id</option>
+                            <option value="order_id">order_id</option>
+                            <option value="manual">Enter manually...</option>
+                        </select>
+                        <div id="${prefix}PrimaryKeyManualContainer" class="hidden">
+                            <input type="text" id="${prefix}PrimaryKeyManual" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter custom primary key" maxlength="255">
+                            <button type="button" class="back-button mt-2" onclick="showPrimaryKeyDropdown('${prefix}')">← Back to dropdown</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}SqlQuery" class="block text-sm font-medium mb-2">📝 SQL Query (Optional)</label>
+                    <textarea id="${prefix}SqlQuery" class="form-textarea w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" rows="3" placeholder="Enter custom SQL query (optional)"></textarea>
+                </div>
+                `
+                    : ""
+                }
+                
+                ${
+                  isFileTab
+                    ? `
+                <div class="form-group">
+                    <label for="${prefix}ExcelFile" class="block text-sm font-medium mb-2">📁 Excel File</label>
+                    <input type="file" id="${prefix}ExcelFile" class="form-file w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-500 cursor-pointer" accept=".xlsx,.xls,.csv">
+                </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+    `;
+}
+
+// Generate form fields with file upload (for multi-table mode)
+function generateFormFieldsWithFileUpload(prefix) {
+  const isSource = prefix.includes("source") || prefix.includes("Source");
+  const cardType = isSource ? "source" : "target";
+  const cardTitle = isSource ? "Source Configuration" : "Target Configuration";
+
+  return `
+        <div class="source-target-card border-t-4 border-t-wellsfargo-red shadow-elevated">
+            <div class="card-header gradient-header">
+                <h3 class="text-wellsfargo-red flex items-center gap-2">
+                    <div class="w-3 h-3 bg-wellsfargo-red rounded-full"></div>
+                    ${cardTitle}
+                </h3>
+                <p>Configure your data ${
+                  isSource ? "source" : "target"
+                } connection details</p>
+            </div>
+            <div class="config-content p-6 space-y-4">
+                <div class="form-group">
+                    <label for="${prefix}Type" class="block text-sm font-medium mb-2">🗄️ Database Type</label>
+                    <select id="${prefix}Type" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200">
+                        <option value="">Select database type</option>
+                        ${databaseTypes
+                          .map(
+                            (type) => `<option value="${type}">${type}</option>`
+                          )
+                          .join("")}
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="${prefix}Host" class="block text-sm font-medium mb-2">🌐 Host</label>
+                        <div id="${prefix}HostContainer">
+                            <input type="text" id="${prefix}Host" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="localhost" maxlength="1500">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="${prefix}Port" class="block text-sm font-medium mb-2">🔌 Port</label>
+                        <div id="${prefix}PortContainer">
+                            <input type="text" id="${prefix}Port" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="5432" maxlength="10">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}Database" class="block text-sm font-medium mb-2">💾 Database Name</label>
+                    <div id="${prefix}DatabaseContainer">
+                        <input type="text" id="${prefix}Database" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter database name" maxlength="255">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="${prefix}Username" class="block text-sm font-medium mb-2">👤 Username</label>
+                        <div id="${prefix}UsernameContainer">
+                            <input type="text" id="${prefix}Username" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter username" maxlength="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="${prefix}Password" class="block text-sm font-medium mb-2">🔒 Password</label>
+                        <input type="password" id="${prefix}Password" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter password" maxlength="100">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}ExcelFile" class="block text-sm font-medium mb-2">📁 Excel File (Multi-table Configuration)</label>
+                    <input type="file" id="${prefix}ExcelFile" class="form-file w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-500 cursor-pointer" accept=".xlsx,.xls,.csv">
+                    <p class="text-sm text-gray-600 mt-1">Upload Excel file with table configuration for multi-table comparison</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Generate Unix server section
+function generateUnixServerSection(prefix) {
+  return `
+        <div class="unix-server-section mb-6">
+            <div class="source-target-card border-t-4 border-t-wellsfargo-red shadow-elevated">
+                <div class="card-header gradient-header">
+                    <h3 class="text-wellsfargo-red flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                        Unix Server Configuration
+                    </h3>
+                    <p>Server details for operation execution</p>
+                </div>
+                <div class="config-content p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="${prefix}UnixHost" class="block text-sm font-medium mb-2">🖥️ Unix Host</label>
+                            <input type="text" id="${prefix}UnixHost" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter Unix server host" maxlength="255">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="${prefix}UnixPort" class="block text-sm font-medium mb-2">🔌 Unix Port</label>
+                            <input type="text" id="${prefix}UnixPort" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="22" value="22" maxlength="10">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="${prefix}UnixUsername" class="block text-sm font-medium mb-2">👤 Unix Username</label>
+                            <input type="text" id="${prefix}UnixUsername" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter Unix username" maxlength="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="${prefix}UnixPassword" class="block text-sm font-medium mb-2">🔒 Unix Password</label>
+                            <input type="password" id="${prefix}UnixPassword" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter Unix password" maxlength="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="${prefix}UnixKeyFile" class="block text-sm font-medium mb-2">🔐 SSH Key File (Optional)</label>
+                        <input type="text" id="${prefix}UnixKeyFile" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Path to SSH key file (optional)" maxlength="500">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Handle primary key dropdown selection
+function handlePrimaryKeySelection(prefix) {
+  const select = document.getElementById(prefix + "PrimaryKey");
+  const manualContainer = document.getElementById(
+    prefix + "PrimaryKeyManualContainer"
+  );
+
+  if (select.value === "manual") {
+    select.classList.add("hidden");
+    manualContainer.classList.remove("hidden");
+    const manualInput = document.getElementById(prefix + "PrimaryKeyManual");
+    if (manualInput) {
+      manualInput.focus();
+    }
+  }
+}
+
+// Show primary key dropdown
+function showPrimaryKeyDropdown(prefix) {
+  const select = document.getElementById(prefix + "PrimaryKey");
+  const manualContainer = document.getElementById(
+    prefix + "PrimaryKeyManualContainer"
+  );
+
+  select.classList.remove("hidden");
+  manualContainer.classList.add("hidden");
+  select.value = "";
+}
+
+// Update dropdown options based on database type
+function updateDropdownOptions(prefix, dbType) {
+  const config = databaseConfigs[dbType];
+  if (!config) return;
+
+  // Update host dropdown
+  const hostContainer = document.getElementById(prefix + "HostContainer");
+  if (hostContainer) {
+    hostContainer.innerHTML = generateDropdownWithCustom(
+      prefix + "Host",
+      config.hosts,
+      "Select or enter host"
+    );
+  }
+
+  // Update port dropdown
+  const portContainer = document.getElementById(prefix + "PortContainer");
+  if (portContainer) {
+    portContainer.innerHTML = generateDropdownWithCustom(
+      prefix + "Port",
+      config.ports,
+      "Select or enter port"
+    );
+  }
+
+  // Update username dropdown
+  const usernameContainer = document.getElementById(
+    prefix + "UsernameContainer"
+  );
+  if (usernameContainer) {
+    usernameContainer.innerHTML = generateDropdownWithCustom(
+      prefix + "Username",
+      config.usernames,
+      "Select or enter username"
+    );
+  }
+
+  // Update database dropdown
+  const databaseContainer = document.getElementById(
+    prefix + "DatabaseContainer"
+  );
+  if (databaseContainer) {
+    databaseContainer.innerHTML = generateDropdownWithCustom(
+      prefix + "Database",
+      config.databases,
+      "Select or enter database"
+    );
+  }
+
+  // Re-attach event listeners
+  attachDropdownListeners(prefix);
+}
+
+// Attach event listeners to dropdowns
+function attachDropdownListeners(prefix) {
+  const hostSelect = document.getElementById(prefix + "Host");
+  const portSelect = document.getElementById(prefix + "Port");
+  const usernameSelect = document.getElementById(prefix + "Username");
+  const databaseSelect = document.getElementById(prefix + "Database");
+
+  if (hostSelect) {
+    hostSelect.addEventListener("change", function () {
+      handleDropdownChange(this.id, "host");
+    });
+  }
+
+  if (portSelect) {
+    portSelect.addEventListener("change", function () {
+      handleDropdownChange(this.id, "port");
+    });
+  }
+
+  if (usernameSelect) {
+    usernameSelect.addEventListener("change", function () {
+      handleDropdownChange(this.id, "username");
+    });
+  }
+
+  if (databaseSelect) {
+    databaseSelect.addEventListener("change", function () {
+      handleDropdownChange(this.id, "database");
+    });
+  }
+}
+
+// Generate Data Comparison form
+function generateComparisonForm() {
+  console.log("Looking for comparison-form container...");
+  const container = document.getElementById("comparison-form");
+  if (!container) {
+    console.error("comparison-form container not found!");
+    return;
+  }
+
+  console.log("Found comparison-form container, showing initial message...");
+  container.innerHTML =
+    '<p class="text-gray-500 text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">👆 Please select a comparison type above to continue</p>';
+}
+
+// Handle table mode change for Data Comparison
+function handleTableModeChange(mode) {
+  currentTableMode = mode;
+  console.log("Table mode changed to:", mode);
+
+  const container = document.getElementById("comparison-form-fields");
+  if (container) {
+    // Clear and regenerate form with current table mode
+    if (mode === "single") {
+      container.innerHTML = `
+                <div class="grid lg:grid-cols-2 gap-6">
+                    ${generateFormFields("comparisonSource")}
+                    ${generateFormFields("comparisonTarget")}
+                </div>
+                
+                ${generateUnixServerSection("comparison")}
+            `;
+    } else {
+      // Multi table mode - show database fields AND file upload option
+      container.innerHTML = `
+                <div class="grid lg:grid-cols-2 gap-6">
+                    ${generateFormFieldsWithFileUpload("comparisonSource")}
+                    ${generateFormFieldsWithFileUpload("comparisonTarget")}
+                </div>
+                
+                ${generateUnixServerSection("comparison")}
+            `;
+    }
+    attachFormListeners("comparison");
+  }
+}
+
+// Generate comparison form based on comparison type
+function generateComparisonFormByType(comparisonType) {
+  const container = document.getElementById("comparison-form");
+  if (!container) return;
+
+  let sourceFields, targetFields;
+
+  // Determine what fields to show for source and target based on comparison type
+  switch (comparisonType) {
+    case "file-to-file":
+      sourceFields = generateFileFields("comparisonSource");
+      targetFields = generateFileFields("comparisonTarget");
+      break;
+    case "file-to-database":
+      sourceFields = generateFileFields("comparisonSource");
+      targetFields = generateFormFields("comparisonTarget");
+      break;
+    case "database-to-file":
+      sourceFields = generateFormFields("comparisonSource");
+      targetFields = generateFileFields("comparisonTarget");
+      break;
+    case "database-to-database":
+      // Use table mode to determine fields
+      if (currentTableMode === "single") {
+        sourceFields = generateFormFields("comparisonSource");
+        targetFields = generateFormFields("comparisonTarget");
+      } else {
+        sourceFields = generateFormFieldsWithFileUpload("comparisonSource");
+        targetFields = generateFormFieldsWithFileUpload("comparisonTarget");
+      }
+      break;
+    default:
+      container.innerHTML =
+        '<p class="text-gray-500 text-center py-4">Please select a comparison type</p>';
+      return;
+  }
+
+  container.innerHTML = `
+        <form class="space-y-6" onsubmit="executeOperation(event, 'Data Comparison')">
+            <div id="comparison-form-fields">
+                <div class="grid lg:grid-cols-2 gap-6">
+                    ${sourceFields}
+                    ${targetFields}
+                </div>
+                
+                ${generateUnixServerSection("comparison")}
+            </div>
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute Data Comparison
+                </button>
+            </div>
+        </form>
+    `;
+
+  attachFormListeners("comparison");
+
+  // Attach file field listeners for conditional display
+  if (
+    comparisonType === "file-to-file" ||
+    comparisonType === "file-to-database"
+  ) {
+    attachFileFieldListeners("comparisonSource");
+  }
+  if (
+    comparisonType === "file-to-file" ||
+    comparisonType === "database-to-file"
+  ) {
+    attachFileFieldListeners("comparisonTarget");
+  }
+}
+
+// Generate file configuration fields for source/target
+function generateFileFields(prefix) {
+  const label = prefix.includes("Source") ? "Source" : "Target";
+  const borderColor = prefix.includes("Source")
+    ? "border-wellsfargo-red/20"
+    : "border-wellsfargo-gold/20";
+  const gradientColor = prefix.includes("Source")
+    ? "from-wellsfargo-red/10 to-wellsfargo-gold/10"
+    : "from-wellsfargo-gold/10 to-wellsfargo-red/10";
+  const dotColor = prefix.includes("Source")
+    ? "bg-wellsfargo-red"
+    : "bg-wellsfargo-gold";
+  const titleColor = prefix.includes("Source")
+    ? "text-wellsfargo-red"
+    : "text-wellsfargo-gold";
+
+  return `
+        <div class="card ${borderColor}">
+            <div class="card-header bg-gradient-to-r ${gradientColor}">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 ${dotColor} rounded-full"></div>
+                    <h4 class="${titleColor}">${label} File Configuration</h4>
+                </div>
+                <p>Configure your ${label.toLowerCase()} file details</p>
+            </div>
+            <div class="card-content space-y-4">
+                <div class="form-group">
+                    <label class="block text-sm font-medium mb-2">📄 File Type</label>
+                    <select id="${prefix}FileType" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg">
+                        <option value="">Select file type</option>
+                        <option value="CSV">CSV</option>
+                        <option value="Excel">Excel</option>
+                        <option value="JSON">JSON</option>
+                        <option value="Parquet">Parquet</option>
+                        <option value="XML">XML</option>
+                        <option value="DAT">DAT</option>
+                        <option value="TXT">TXT</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="${prefix}DelimiterGroup" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">🔗 Delimiter</label>
+                    <input type="text" id="${prefix}Delimiter" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg" placeholder="Enter delimiter (e.g., , | ; tab)" maxlength="10">
+                    <p class="text-xs text-gray-500 mt-1">Common: comma (,), pipe (|), semicolon (;), tab (\\t)</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="block text-sm font-medium mb-2">💾 Storage Type</label>
+                    <select id="${prefix}Storage" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg">
+                        <option value="">Select storage type</option>
+                        <option value="Local">Local</option>
+                        <option value="Hadoop">Hadoop</option>
+                        <option value="Upload">Upload File from System</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="${prefix}PathGroup" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">📂 File Path / File Details</label>
+                    <input type="text" id="${prefix}FilePath" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg" placeholder="/path/to/your/file.csv" maxlength="500">
+                </div>
+                
+                <div class="form-group" id="${prefix}UploadGroup" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">📤 Upload File</label>
+                    <input type="file" id="${prefix}FileUpload" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg">
+                </div>
+                
+                <div class="form-group">
+                    <label class="block text-sm font-medium mb-2">💻 Optional SQL Query</label>
+                    <textarea id="${prefix}SqlQuery" class="form-textarea w-full p-3 border-2 border-gray-300 rounded-lg" rows="3" placeholder="SELECT * FROM file WHERE conditions... (Optional)"></textarea>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Attach file field event listeners for conditional field display
+function attachFileFieldListeners(prefix) {
+  // File type change - show/hide delimiter field
+  const fileTypeSelect = document.getElementById(`${prefix}FileType`);
+  if (fileTypeSelect) {
+    fileTypeSelect.addEventListener("change", function () {
+      const delimiterGroup = document.getElementById(`${prefix}DelimiterGroup`);
+      if (
+        this.value === "CSV" ||
+        this.value === "DAT" ||
+        this.value === "TXT"
+      ) {
+        delimiterGroup.style.display = "block";
+      } else {
+        delimiterGroup.style.display = "none";
+      }
+    });
+  }
+
+  // Storage type change - show/hide file path or upload fields
+  const storageSelect = document.getElementById(`${prefix}Storage`);
+  if (storageSelect) {
+    storageSelect.addEventListener("change", function () {
+      const pathGroup = document.getElementById(`${prefix}PathGroup`);
+      const uploadGroup = document.getElementById(`${prefix}UploadGroup`);
+
+      if (this.value === "Local" || this.value === "Hadoop") {
+        pathGroup.style.display = "block";
+        uploadGroup.style.display = "none";
+      } else if (this.value === "Upload") {
+        pathGroup.style.display = "none";
+        uploadGroup.style.display = "block";
+      } else {
+        pathGroup.style.display = "none";
+        uploadGroup.style.display = "none";
+      }
+    });
+  }
+}
+
+// Generate Data Load form
+function generateDataLoadForm() {
+  const container = document.getElementById("load-form");
+  if (!container) return;
+
+  container.innerHTML = `
+        <form class="space-y-6" onsubmit="executeOperation(event, 'Data Load')">
+            <div class="grid lg:grid-cols-2 gap-6">
+                ${generateDataLoadSourceFields()}
+                ${generateFormFields("loadTarget")}
+            </div>
+            
+            ${generateUnixServerSection("load")}
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute Data Load
+                </button>
+            </div>
+        </form>
+    `;
+
+  // Attach event listeners
+  attachFormListeners("load");
+  attachDataLoadSourceListeners();
+}
+
+// Generate Data Load Source Fields with File support
+function generateDataLoadSourceFields() {
+  return `
+        <div class="source-target-card border-t-4 border-t-wellsfargo-red shadow-elevated">
+            <div class="card-header gradient-header">
+                <h3 class="text-wellsfargo-red flex items-center gap-2">
+                    <div class="w-3 h-3 bg-wellsfargo-red rounded-full"></div>
+                    Source Configuration
+                </h3>
+                <p>Configure your data source connection details</p>
+            </div>
+            <div class="config-content p-6 space-y-4">
+                <div class="form-group">
+                    <label for="loadSourceType" class="block text-sm font-medium mb-2">🗄️ Database Type</label>
+                    <select id="loadSourceType" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200">
+                        <option value="">Select database type</option>
+                        ${databaseTypes
+                          .map(
+                            (type) => `<option value="${type}">${type}</option>`
+                          )
+                          .join("")}
+                    </select>
+                </div>
+                
+                <!-- File Configuration (hidden by default) -->
+                <div id="loadSourceFileConfig" class="hidden space-y-4 border-t pt-4 bg-blue-50 p-4 rounded-lg">
+                    <div class="form-group">
+                        <label for="loadSourceFileType" class="block text-sm font-medium mb-2">📄 File Type</label>
+                        <select id="loadSourceFileType" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <option value="">Select file type</option>
+                            <option value="CSV">CSV</option>
+                            <option value="Excel">Excel</option>
+                            <option value="JSON">JSON</option>
+                            <option value="Parquet">Parquet</option>
+                            <option value="XML">XML</option>
+                            <option value="Dat">Dat or txt file with Delimited</option>
+                        </select>
+                    </div>
+                    
+                    <div id="loadSourceDelimiterField" class="form-group hidden">
+                        <label for="loadSourceFileDelimiter" class="block text-sm font-medium mb-2">🔗 Delimiter</label>
+                        <input type="text" id="loadSourceFileDelimiter" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter delimiter (e.g., , | ; tab)" maxlength="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceFileStorage" class="block text-sm font-medium mb-2">💾 Storage Type</label>
+                        <select id="loadSourceFileStorage" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <option value="">Select storage type</option>
+                            <option value="Local">Local File</option>
+                            <option value="Hadoop">Hadoop File</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceFileLocationType" class="block text-sm font-medium mb-2">📍 File Location Type</label>
+                        <select id="loadSourceFileLocationType" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <option value="">Select location type</option>
+                            <option value="path">Enter File Path</option>
+                            <option value="upload">Upload File from System</option>
+                        </select>
+                    </div>
+                    
+                    <div id="loadSourceFilePathField" class="form-group hidden">
+                        <label for="loadSourceFileLocation" class="block text-sm font-medium mb-2">📂 File Location</label>
+                        <input type="text" id="loadSourceFileLocation" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="/path/to/your/file.csv" maxlength="500">
+                    </div>
+                    
+                    <div id="loadSourceFileUploadField" class="form-group hidden">
+                        <label for="loadSourceFileUpload" class="block text-sm font-medium mb-2">📤 Upload File</label>
+                        <input type="file" id="loadSourceFileUpload" class="form-file w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
+                        <p id="loadSourceFileUploadName" class="text-sm text-green-600 mt-2 hidden"></p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceOptionalSql" class="block text-sm font-medium mb-2">💻 Optional SQL Query</label>
+                        <textarea id="loadSourceOptionalSql" class="form-textarea w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono text-sm" rows="3" placeholder="SELECT * FROM file WHERE conditions... (Optional)" maxlength="10000"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Optional: Enter SQL query to filter or transform the file data</p>
+                    </div>
+                </div>
+                
+                <!-- Standard Database Configuration (hidden when File is selected) -->
+                <div id="loadSourceDbConfig" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="loadSourceHost" class="block text-sm font-medium mb-2">🌐 Host</label>
+                            <div id="loadSourceHostContainer">
+                                <input type="text" id="loadSourceHost" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="localhost" maxlength="1500">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loadSourcePort" class="block text-sm font-medium mb-2">🔌 Port</label>
+                            <div id="loadSourcePortContainer">
+                                <input type="text" id="loadSourcePort" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="5432" maxlength="10">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceDatabase" class="block text-sm font-medium mb-2">💾 Database Name</label>
+                        <div id="loadSourceDatabaseContainer">
+                            <input type="text" id="loadSourceDatabase" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter database name" maxlength="255">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="loadSourceUsername" class="block text-sm font-medium mb-2">👤 Username</label>
+                            <div id="loadSourceUsernameContainer">
+                                <input type="text" id="loadSourceUsername" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter username" maxlength="100">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loadSourcePassword" class="block text-sm font-medium mb-2">🔒 Password</label>
+                            <input type="password" id="loadSourcePassword" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter password" maxlength="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceTableName" class="block text-sm font-medium mb-2">📋 Table Name</label>
+                        <input type="text" id="loadSourceTableName" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter table name" maxlength="255">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourcePrimaryKey" class="block text-sm font-medium mb-2">🔑 Primary Key</label>
+                        <div class="primary-key-section">
+                            <select id="loadSourcePrimaryKey" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 mb-2">
+                                <option value="">Select primary key</option>
+                                <option value="id">id</option>
+                                <option value="user_id">user_id</option>
+                                <option value="customer_id">customer_id</option>
+                                <option value="order_id">order_id</option>
+                                <option value="manual">Enter manually...</option>
+                            </select>
+                            <div id="loadSourcePrimaryKeyManualContainer" class="hidden">
+                                <input type="text" id="loadSourcePrimaryKeyManual" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter custom primary key" maxlength="255">
+                                <button type="button" class="back-button mt-2" onclick="showPrimaryKeyDropdown('loadSource')">← Back to dropdown</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loadSourceSqlQuery" class="block text-sm font-medium mb-2">📝 SQL Query (Optional)</label>
+                        <textarea id="loadSourceSqlQuery" class="form-textarea w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" rows="3" placeholder="Enter custom SQL query (optional)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Attach event listeners for Data Load source configuration
+function attachDataLoadSourceListeners() {
+  const sourceTypeSelect = document.getElementById("loadSourceType");
+  const fileTypeSelect = document.getElementById("loadSourceFileType");
+  const locationTypeSelect = document.getElementById(
+    "loadSourceFileLocationType"
+  );
+  const fileUpload = document.getElementById("loadSourceFileUpload");
+
+  if (sourceTypeSelect) {
+    sourceTypeSelect.addEventListener("change", function () {
+      const fileConfig = document.getElementById("loadSourceFileConfig");
+      const dbConfig = document.getElementById("loadSourceDbConfig");
+
+      if (this.value === "File") {
+        fileConfig.classList.remove("hidden");
+        dbConfig.classList.add("hidden");
+        // Clear database fields when switching to File
+        clearDatabaseFields("loadSource");
+      } else {
+        fileConfig.classList.add("hidden");
+        dbConfig.classList.remove("hidden");
+        // Clear file fields when switching to Database
+        clearFileFields("loadSource");
+
+        if (this.value && databaseConfigs[this.value]) {
+          updateDropdownOptions("loadSource", this.value);
+        } else {
+          // Reset to basic input fields if no config available
+          resetToBasicInputs("loadSource");
+        }
+      }
+    });
+  }
+
+  // Helper function to clear database fields
+  function clearDatabaseFields(prefix) {
+    const fields = ["Host", "Port", "Database", "Username", "Password"];
+    fields.forEach((field) => {
+      const input = document.getElementById(prefix + field);
+      if (input) input.value = "";
+    });
+  }
+
+  // Helper function to clear file fields
+  function clearFileFields(prefix) {
+    const fileType = document.getElementById(prefix + "FileType");
+    const delimiter = document.getElementById(prefix + "FileDelimiter");
+    const storage = document.getElementById(prefix + "FileStorage");
+    const locationType = document.getElementById(prefix + "FileLocationType");
+    const location = document.getElementById(prefix + "FileLocation");
+    const sql = document.getElementById(prefix + "OptionalSql");
+    const upload = document.getElementById(prefix + "FileUpload");
+
+    if (fileType) fileType.value = "";
+    if (delimiter) delimiter.value = "";
+    if (storage) storage.value = "";
+    if (locationType) locationType.value = "";
+    if (location) location.value = "";
+    if (sql) sql.value = "";
+    if (upload) upload.value = "";
+  }
+
+  // Helper function to reset to basic input fields
+  function resetToBasicInputs(prefix) {
+    const hostContainer = document.getElementById(prefix + "HostContainer");
+    const portContainer = document.getElementById(prefix + "PortContainer");
+    const usernameContainer = document.getElementById(
+      prefix + "UsernameContainer"
+    );
+    const databaseContainer = document.getElementById(
+      prefix + "DatabaseContainer"
+    );
+
+    if (hostContainer) {
+      hostContainer.innerHTML = `<input type="text" id="${prefix}Host" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="localhost" maxlength="1500">`;
+    }
+    if (portContainer) {
+      portContainer.innerHTML = `<input type="text" id="${prefix}Port" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="5432" maxlength="10">`;
+    }
+    if (usernameContainer) {
+      usernameContainer.innerHTML = `<input type="text" id="${prefix}Username" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter username" maxlength="100">`;
+    }
+    if (databaseContainer) {
+      databaseContainer.innerHTML = `<input type="text" id="${prefix}Database" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200" placeholder="Enter database name" maxlength="255">`;
+    }
+  }
+
+  if (fileTypeSelect) {
+    fileTypeSelect.addEventListener("change", function () {
+      const delimiterField = document.getElementById(
+        "loadSourceDelimiterField"
+      );
+      if (this.value === "CSV" || this.value === "Dat") {
+        delimiterField.classList.remove("hidden");
+      } else {
+        delimiterField.classList.add("hidden");
+      }
+    });
+  }
+
+  if (locationTypeSelect) {
+    locationTypeSelect.addEventListener("change", function () {
+      const pathField = document.getElementById("loadSourceFilePathField");
+      const uploadField = document.getElementById("loadSourceFileUploadField");
+
+      if (this.value === "path") {
+        pathField.classList.remove("hidden");
+        uploadField.classList.add("hidden");
+      } else if (this.value === "upload") {
+        pathField.classList.add("hidden");
+        uploadField.classList.remove("hidden");
+      } else {
+        pathField.classList.add("hidden");
+        uploadField.classList.add("hidden");
+      }
+    });
+  }
+
+  if (fileUpload) {
+    fileUpload.addEventListener("change", function () {
+      const fileName = document.getElementById("loadSourceFileUploadName");
+      if (this.files && this.files[0]) {
+        fileName.textContent = `Selected: ${this.files[0].name}`;
+        fileName.classList.remove("hidden");
+      } else {
+        fileName.classList.add("hidden");
+      }
+    });
+  }
+}
+
+// Generate Schema Generation form
+function generateSchemaGenerationForm() {
+  const container = document.getElementById("schema-form");
+  if (!container) return;
+
+  container.innerHTML = `
+        <form class="space-y-6" onsubmit="executeOperation(event, 'Schema Generation')">
+            <div class="grid lg:grid-cols-2 gap-6">
+                ${generateFormFields("schemaSource")}
+                ${generateFormFields("schemaTarget")}
+            </div>
+            
+            ${generateUnixServerSection("schema")}
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute Schema Generation
+                </button>
+            </div>
+        </form>
+    `;
+
+  // Attach event listeners
+  attachFormListeners("schema");
+}
+
+// Generate File Load form
+function generateFileLoadForm() {
+  const container = document.getElementById("fileload-form");
+  if (!container) return;
+
+  container.innerHTML = `
+        <form class="space-y-6" onsubmit="executeOperation(event, 'File Load')">
+            <div class="grid lg:grid-cols-2 gap-6">
+                ${generateFormFields("fileloadSource", true)}
+                ${generateFormFields("fileloadTarget")}
+            </div>
+            
+            ${generateUnixServerSection("fileload")}
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute File Load
+                </button>
+            </div>
+        </form>
+    `;
+
+  // Attach event listeners
+  attachFormListeners("fileload");
+}
+
+// Generate File Download form
+function generateFileDownloadForm() {
+  const container = document.getElementById("filedownload-form");
+  if (!container) return;
+
+  container.innerHTML = `
+        <form class="space-y-6" onsubmit="executeOperation(event, 'File Download')">
+            <div class="grid lg:grid-cols-2 gap-6">
+                ${generateFormFields("filedownloadSource", true)}
+                ${generateFormFields("filedownloadTarget")}
+            </div>
+            
+            ${generateUnixServerSection("filedownload")}
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute File Download
+                </button>
+            </div>
+        </form>
+    `;
+
+  // Attach event listeners
+  attachFormListeners("filedownload");
+}
+
+// Attach form event listeners
+function attachFormListeners(prefix) {
+  // Database type change listeners
+  const sourceTypeSelect = document.getElementById(prefix + "SourceType");
+  const targetTypeSelect = document.getElementById(prefix + "TargetType");
+
+  if (sourceTypeSelect) {
+    sourceTypeSelect.addEventListener("change", function () {
+      updateDropdownOptions(prefix + "Source", this.value);
+    });
+  }
+
+  if (targetTypeSelect) {
+    targetTypeSelect.addEventListener("change", function () {
+      updateDropdownOptions(prefix + "Target", this.value);
+    });
+  }
+
+  // Primary key selection listeners
+  const sourcePkSelect = document.getElementById(prefix + "SourcePrimaryKey");
+  const targetPkSelect = document.getElementById(prefix + "TargetPrimaryKey");
+
+  if (sourcePkSelect) {
+    sourcePkSelect.addEventListener("change", function () {
+      if (this.value === "manual") {
+        handlePrimaryKeySelection(prefix + "Source");
+      }
+    });
+  }
+
+  if (targetPkSelect) {
+    targetPkSelect.addEventListener("change", function () {
+      if (this.value === "manual") {
+        handlePrimaryKeySelection(prefix + "Target");
+      }
+    });
+  }
+}
+
+// Execute operation
+async function executeOperation(event, operationType) {
+  if (event) {
+    event.preventDefault();
+  }
+
+  console.log(
+    `Executing ${operationType} with table mode: ${currentTableMode}`
+  );
+
+  // Reset download button state when starting a new comparison
+  if (operationType === "Data Comparison") {
+    resetDownloadButton();
+  }
+
+  // Show loading state
+  const button = event ? event.target.querySelector(".execute-button") : null;
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = `<span class="loading-spinner mr-2">⟳</span>Processing...`;
+  }
+
+  try {
+    // Collect form data based on current tab
+    const formData = collectFormData(currentTab);
+
+    // Add table mode to form data
+    formData.tableMode = currentTableMode;
+
+    // Mock API call (replace with actual endpoint)
+    const response = await fetch("/api/execute-operation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        operation: operationType,
+        tableMode: currentTableMode,
+        ...formData,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      addLog(`✅ ${operationType} operation started successfully`);
+      console.log("Operation result:", result);
+    } else {
+      throw new Error(`${operationType} operation failed`);
+    }
+  } catch (error) {
+    console.error("Error executing operation:", error);
+    addLog(`❌ Error: ${error.message}`);
+  } finally {
+    // Reset button state
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = `<span class="execute-icon mr-2">▶️</span>Execute ${operationType}`;
+    }
+  }
+}
+
+// Collect form data for current tab
+function collectFormData(tabPrefix) {
+  const data = {};
+
+  // Get all form inputs in the current tab
+  const tabContent = document.getElementById(tabPrefix);
+  if (!tabContent) return data;
+
+  const inputs = tabContent.querySelectorAll("input, select, textarea");
+  inputs.forEach((input) => {
+    if (input.id) {
+      if (input.type === "file") {
+        data[input.id] = input.files[0] || null;
+      } else if (input.type === "radio") {
+        if (input.checked) {
+          data[input.name] = input.value;
+        }
+      } else {
+        data[input.id] = input.value;
+      }
+    }
+  });
+
+  return data;
+}
+
+// WebSocket connection for real-time logs
+function initializeWebSocket() {
+  try {
+    socket = io();
+
+    socket.on("connect", function () {
+      isConnected = true;
+      updateConnectionStatus();
+      addLog("🔗 Connected to Wells Fargo Data Management Platform");
+    });
+
+    socket.on("disconnect", function () {
+      isConnected = false;
+      updateConnectionStatus();
+      addLog("🔌 Disconnected from server");
+    });
+
+    socket.on("log", function (data) {
+      if (!isPaused) {
+        addLog(data.message);
+      }
+    });
+
+    socket.on("operation_complete", function (data) {
+      console.log("Operation complete:", data);
+      if (data.status === "success") {
+        jobComplete = true;
+        if (data.report_path) {
+          reportUrl = data.report_path;
+        }
+        enableDownloadButton();
+        addLog("✅ Comparison complete! Report ready to download.");
+      }
+    });
+
+    socket.on("operation_error", function (data) {
+      console.error("Operation error:", data);
+      jobComplete = false;
+      reportUrl = "";
+      disableDownloadButton();
+      addLog(`❌ Comparison failed: ${data.error}`);
+    });
+
+    socket.on("error", function (error) {
+      console.error("Socket error:", error);
+      addLog(`❌ Connection error: ${error}`);
+    });
+  } catch (error) {
+    console.error("WebSocket initialization failed:", error);
+    addLog("❌ Failed to initialize real-time connection");
+  }
+}
+
+// Update connection status indicator
+function updateConnectionStatus() {
+  const statusElement = document.getElementById("connection-status");
+  if (isConnected) {
+    statusElement.innerHTML =
+      '<div class="w-2 h-2 bg-green-500 rounded-full"></div>Connected';
+    statusElement.className =
+      "status-indicator flex items-center gap-2 text-green-600";
+  } else {
+    statusElement.innerHTML =
+      '<div class="w-2 h-2 bg-gray-400 rounded-full"></div>Disconnected';
+    statusElement.className =
+      "status-indicator flex items-center gap-2 text-gray-500";
+  }
+}
+
+// Add log message
+function addLog(message) {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `[${timestamp}] ${message}`;
+  logs.push(logEntry);
+
+  // Keep only last 1000 logs
+  if (logs.length > 1000) {
+    logs = logs.slice(-1000);
+  }
+
+  const logDisplay = document.getElementById("log-display");
+  if (logDisplay) {
+    // Remove placeholder if exists
+    const placeholder = logDisplay.querySelector(".log-placeholder");
+    if (placeholder) {
+      placeholder.remove();
+    }
+
+    const logElement = document.createElement("div");
+    logElement.className =
+      "log-entry text-sm font-mono mb-1 p-2 rounded hover:bg-gray-100";
+    logElement.textContent = logEntry;
+
+    logDisplay.appendChild(logElement);
+
+    // Auto-scroll to bottom
+    logDisplay.scrollTop = logDisplay.scrollHeight;
+  }
+}
+
+// Initialize log controls
+function initializeLogControls() {
+  // Clear logs button
+  const clearLogsBtn = document.getElementById("clear-logs");
+  if (clearLogsBtn) {
+    clearLogsBtn.addEventListener("click", clearLogs);
+  }
+
+  // Pause logs button
+  const pauseLogsBtn = document.getElementById("pause-logs");
+  if (pauseLogsBtn) {
+    pauseLogsBtn.addEventListener("click", togglePause);
+  }
+}
+
+// Log management functions
+function clearLogs() {
+  logs = [];
+  const logDisplay = document.getElementById("log-display");
+  if (logDisplay) {
+    logDisplay.innerHTML =
+      '<div class="log-placeholder text-gray-500">Logs cleared. New logs will appear here...</div>';
+  }
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  const pauseBtn = document.getElementById("pause-logs");
+  const pausedIndicator = document.getElementById("paused-indicator");
+
+  if (pauseBtn) {
+    pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+  }
+
+  if (pausedIndicator) {
+    if (isPaused) {
+      pausedIndicator.classList.remove("hidden");
+    } else {
+      pausedIndicator.classList.add("hidden");
+    }
+  }
+}
+
+// Download Report Button Functions
+function enableDownloadButton() {
+  const downloadBtn = document.getElementById("download-report-btn");
+  const downloadIcon = document.getElementById("download-icon");
+  const checkIcon = document.getElementById("check-icon");
+  const btnText = document.getElementById("download-btn-text");
+
+  if (downloadBtn) {
+    downloadBtn.disabled = false;
+    downloadBtn.classList.add("enabled");
+    downloadIcon.classList.add("hidden");
+    checkIcon.classList.remove("hidden");
+    btnText.textContent = "Download Comparison Report";
+
+    // Add click handler
+    downloadBtn.onclick = handleDownloadReport;
+  }
+}
+
+function disableDownloadButton() {
+  const downloadBtn = document.getElementById("download-report-btn");
+  const downloadIcon = document.getElementById("download-icon");
+  const checkIcon = document.getElementById("check-icon");
+  const btnText = document.getElementById("download-btn-text");
+
+  if (downloadBtn) {
+    downloadBtn.disabled = true;
+    downloadBtn.classList.remove("enabled");
+    downloadIcon.classList.remove("hidden");
+    checkIcon.classList.add("hidden");
+    btnText.textContent = "Waiting for Comparison...";
+    downloadBtn.onclick = null;
+  }
+}
+
+function handleDownloadReport() {
+  if (!reportUrl) {
+    addLog("❌ No report available to download");
+    return;
+  }
+
+  try {
+    // Create a link and trigger download
+    const link = document.createElement("a");
+    link.href = `/api/download-report?path=${encodeURIComponent(reportUrl)}`;
+    link.download = "comparison_report.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addLog("📥 Downloading comparison report...");
+  } catch (error) {
+    console.error("Download error:", error);
+    addLog(`❌ Download failed: ${error.message}`);
+  }
+}
+
+// Reset download button when starting a new comparison
+function resetDownloadButton() {
+  jobComplete = false;
+  reportUrl = "";
+  disableDownloadButton();
+}
+===========================================================================
+=================================================
+// File Compare Form Generation and Handling Functions
+
+// Generate file configuration fields
+function generateFileConfig(prefix) {
+  return `
+        <div class="source-target-card border-t-4 border-t-blue-500 shadow-elevated">
+            <div class="card-header gradient-header">
+                <h3 class="text-blue-700 flex items-center gap-2">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    ${
+                      prefix.includes("source") || prefix.includes("Source")
+                        ? "Source"
+                        : "Target"
+                    } File Configuration
+                </h3>
+                <p>Configure your file details for comparison</p>
+            </div>
+            <div class="config-content p-6 space-y-4">
+                <div class="form-group">
+                    <label for="${prefix}FileType" class="block text-sm font-medium mb-2">📄 File Type</label>
+                    <select id="${prefix}FileType" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                        <option value="">Select file type</option>
+                        <option value="CSV">CSV</option>
+                        <option value="Excel">Excel</option>
+                        <option value="JSON">JSON</option>
+                        <option value="Parquet">Parquet</option>
+                        <option value="XML">XML</option>
+                        <option value="Dat">Dat or txt file with Delimiter</option>
+                    </select>
+                </div>
+                
+                <div id="${prefix}DelimiterContainer" class="form-group hidden">
+                    <label for="${prefix}Delimiter" class="block text-sm font-medium mb-2">📝 Delimiter</label>
+                    <input type="text" id="${prefix}Delimiter" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter delimiter (e.g., comma, pipe, tab)" maxlength="10">
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}FileLocation" class="block text-sm font-medium mb-2">📍 File Location Type</label>
+                    <select id="${prefix}FileLocation" class="form-select w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                        <option value="">Select location type</option>
+                        <option value="local">Local File</option>
+                        <option value="hadoop">Hadoop File</option>
+                        <option value="upload">Upload file from system</option>
+                    </select>
+                </div>
+                
+                <div id="${prefix}FilePathContainer" class="form-group">
+                    <label for="${prefix}FilePath" class="block text-sm font-medium mb-2">📂 File Path</label>
+                    <input type="text" id="${prefix}FilePath" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter full file path" maxlength="500">
+                </div>
+                
+                <div id="${prefix}FileUploadContainer" class="form-group hidden">
+                    <label for="${prefix}FileUpload" class="block text-sm font-medium mb-2">📤 Upload File</label>
+                    <input type="file" id="${prefix}FileUpload" class="form-input w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="${prefix}SqlQuery" class="block text-sm font-medium mb-2">📝 SQL Query (Optional)</label>
+                    <textarea id="${prefix}SqlQuery" class="form-textarea w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" rows="3" placeholder="Enter custom SQL query (optional)"></textarea>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Generate File Compare Form
+function generateFileCompareForm() {
+  console.log("Generating file compare form...");
+  const container = document.getElementById("filecompare-form");
+  if (!container) {
+    console.error("filecompare-form container not found!");
+    return;
+  }
+
+  container.innerHTML = `
+        <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+            <label class="text-base font-semibold mb-3 block">Comparison Type</label>
+            <div class="radio-group flex gap-6" id="filecompare-type-selection">
+                <div class="flex items-center space-x-2">
+                    <input type="radio" name="fileCompareType" value="file-file" id="fileFileType" checked>
+                    <label for="fileFileType">File to File</label>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="radio" name="fileCompareType" value="file-db" id="fileDbType">
+                    <label for="fileDbType">File to Database</label>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="radio" name="fileCompareType" value="db-file" id="dbFileType">
+                    <label for="dbFileType">Database to File</label>
+                </div>
+            </div>
+        </div>
+        
+        <form class="space-y-6" onsubmit="executeFileCompareOperation(event)">
+            <div id="filecompare-form-fields">
+                <div class="grid lg:grid-cols-2 gap-6">
+                    ${generateFileConfig("filecompareSource")}
+                    ${generateFileConfig("filecompareTarget")}
+                </div>
+                
+                ${generateUnixServerSection("filecompare")}
+            </div>
+            
+            <div class="execute-section text-center p-6 border-t border-gray-200">
+                <button type="submit" class="execute-button bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg">
+                    <span class="execute-icon mr-2">▶️</span>
+                    Execute File Comparison
+                </button>
+            </div>
+        </form>
+    `;
+
+  // Attach event listeners for comparison type selection
+  const radioButtons = document.querySelectorAll(
+    'input[name="fileCompareType"]'
+  );
+  radioButtons.forEach((radio) => {
+    radio.addEventListener("change", function () {
+      handleFileCompareTypeChange(this.value);
+    });
+  });
+
+  // Attach event listeners for file type changes
+  attachFileTypeListeners("filecompareSource");
+  attachFileTypeListeners("filecompareTarget");
+
+  // Attach event listeners for file location changes
+  attachFileLocationListeners("filecompareSource");
+  attachFileLocationListeners("filecompareTarget");
+
+  console.log("File compare form generated");
+}
+
+// Handle file compare type change
+function handleFileCompareTypeChange(type) {
+  console.log("File compare type changed to:", type);
+  const formFieldsContainer = document.getElementById(
+    "filecompare-form-fields"
+  );
+
+  if (!formFieldsContainer) return;
+
+  let sourceContent = "";
+  let targetContent = "";
+
+  switch (type) {
+    case "file-file":
+      sourceContent = generateFileConfig("filecompareSource");
+      targetContent = generateFileConfig("filecompareTarget");
+      break;
+    case "file-db":
+      sourceContent = generateFileConfig("filecompareSource");
+      targetContent = generateFormFields("filecompareTarget");
+      break;
+    case "db-file":
+      sourceContent = generateFormFields("filecompareSource");
+      targetContent = generateFileConfig("filecompareTarget");
+      break;
+  }
+
+  formFieldsContainer.innerHTML = `
+        <div class="grid lg:grid-cols-2 gap-6">
+            ${sourceContent}
+            ${targetContent}
+        </div>
+        
+        ${generateUnixServerSection("filecompare")}
+    `;
+
+  // Re-attach listeners
+  if (type === "file-file" || type === "file-db") {
+    attachFileTypeListeners("filecompareSource");
+    attachFileLocationListeners("filecompareSource");
+  } else {
+    attachFormListeners("filecompareSource");
+  }
+
+  if (type === "file-file" || type === "db-file") {
+    attachFileTypeListeners("filecompareTarget");
+    attachFileLocationListeners("filecompareTarget");
+  } else {
+    attachFormListeners("filecompareTarget");
+  }
+}
+
+// Attach file type listeners
+function attachFileTypeListeners(prefix) {
+  const fileTypeSelect = document.getElementById(prefix + "FileType");
+  if (fileTypeSelect) {
+    fileTypeSelect.addEventListener("change", function () {
+      handleFileTypeChange(prefix, this.value);
+    });
+  }
+}
+
+// Handle file type change
+function handleFileTypeChange(prefix, fileType) {
+  const delimiterContainer = document.getElementById(
+    prefix + "DelimiterContainer"
+  );
+
+  if (!delimiterContainer) return;
+
+  // Show delimiter field for CSV and Dat files
+  if (fileType === "CSV" || fileType === "Dat") {
+    delimiterContainer.classList.remove("hidden");
+  } else {
+    delimiterContainer.classList.add("hidden");
+  }
+}
+
+// Attach file location listeners
+function attachFileLocationListeners(prefix) {
+  const fileLocationSelect = document.getElementById(prefix + "FileLocation");
+  if (fileLocationSelect) {
+    fileLocationSelect.addEventListener("change", function () {
+      handleFileLocationChange(prefix, this.value);
+    });
+  }
+}
+
+// Handle file location change
+function handleFileLocationChange(prefix, locationType) {
+  const filePathContainer = document.getElementById(
+    prefix + "FilePathContainer"
+  );
+  const fileUploadContainer = document.getElementById(
+    prefix + "FileUploadContainer"
+  );
+  const filePathInput = document.getElementById(prefix + "FilePath");
+
+  if (!filePathContainer || !fileUploadContainer) return;
+
+  if (locationType === "upload") {
+    // Show upload, hide and disable file path
+    filePathContainer.classList.add("hidden");
+    fileUploadContainer.classList.remove("hidden");
+    if (filePathInput) filePathInput.disabled = true;
+  } else {
+    // Show file path, hide upload
+    filePathContainer.classList.remove("hidden");
+    fileUploadContainer.classList.add("hidden");
+    if (filePathInput) filePathInput.disabled = false;
+  }
+}
+
+// Execute file compare operation
+function executeFileCompareOperation(event) {
+  event.preventDefault();
+  console.log("Executing file compare operation...");
+
+  const compareType = document.querySelector(
+    'input[name="fileCompareType"]:checked'
+  ).value;
+
+  // Collect form data based on comparison type
+  const formData = {
+    compareType: compareType,
+    source: collectConfigData("filecompareSource", compareType === "db-file"),
+    target: collectConfigData("filecompareTarget", compareType === "file-db"),
+    unixServer: {
+      host: document.getElementById("filecompareUnixHost")?.value || "",
+      port: document.getElementById("filecompareUnixPort")?.value || "22",
+      username: document.getElementById("filecompareUnixUsername")?.value || "",
+      password: document.getElementById("filecompareUnixPassword")?.value || "",
+      keyFile: document.getElementById("filecompareUnixKeyFile")?.value || "",
+    },
+  };
+
+  console.log("File compare form data:", formData);
+
+  // Submit to backend
+  fetch("/api/execute-operation", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      operation: "File Comparison",
+      ...formData,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("File compare operation response:", data);
+      alert(
+        data.message || "File comparison operation submitted successfully!"
+      );
+    })
+    .catch((error) => {
+      console.error("Error executing file compare operation:", error);
+      alert("Error executing file comparison: " + error.message);
+    });
+}
+
+// Collect configuration data (file or database)
+function collectConfigData(prefix, isDatabase) {
+  if (isDatabase) {
+    // Collect database configuration
+    return {
+      type: "database",
+      dbType: document.getElementById(prefix + "Type")?.value || "",
+      host: document.getElementById(prefix + "Host")?.value || "",
+      port: document.getElementById(prefix + "Port")?.value || "",
+      database: document.getElementById(prefix + "Database")?.value || "",
+      username: document.getElementById(prefix + "Username")?.value || "",
+      password: document.getElementById(prefix + "Password")?.value || "",
+      tableName: document.getElementById(prefix + "TableName")?.value || "",
+      primaryKey:
+        document.getElementById(prefix + "PrimaryKey")?.value ||
+        document.getElementById(prefix + "PrimaryKeyManual")?.value ||
+        "",
+      sqlQuery: document.getElementById(prefix + "SqlQuery")?.value || "",
+    };
+  } else {
+    // Collect file configuration
+    const locationType =
+      document.getElementById(prefix + "FileLocation")?.value || "";
+    const fileUploadInput = document.getElementById(prefix + "FileUpload");
+
+    return {
+      type: "file",
+      fileType: document.getElementById(prefix + "FileType")?.value || "",
+      delimiter: document.getElementById(prefix + "Delimiter")?.value || "",
+      locationType: locationType,
+      filePath:
+        locationType === "upload"
+          ? ""
+          : document.getElementById(prefix + "FilePath")?.value || "",
+      uploadedFile:
+        locationType === "upload" && fileUploadInput?.files[0]
+          ? fileUploadInput.files[0].name
+          : "",
+      sqlQuery: document.getElementById(prefix + "SqlQuery")?.value || "",
+    };
+  }
+}
