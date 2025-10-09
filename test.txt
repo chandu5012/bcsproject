@@ -3071,3 +3071,412 @@ function collectConfigData(prefix, isDatabase) {
     };
   }
 }
+=====================================
+===================================
+from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
+import json
+import time
+import paramiko
+import shlex
+import threading
+from io import StringIO
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key-here'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/execute-operation', methods=['POST'])
+def execute_operation():
+    data = request.json
+    operation_type = data.get('operation', 'Unknown')
+    
+    print(f"Operation requested - Type: {operation_type}")
+    print(f"Operation data: {data}")
+    
+    # Start operation in background thread
+    thread = threading.Thread(target=process_operation, args=(data, operation_type))
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({"status": "success", "message": f"{operation_type} operation started"})
+
+def process_operation(data, operation_type):
+    """Process operation in background thread with real-time logging"""
+    try:
+        # Extract Unix server connection details
+        unix_config = extract_unix_config(data)
+        
+        # Extract source and target configurations
+        source_config = extract_source_config(data, operation_type)
+        target_config = extract_target_config(data, operation_type)
+        
+        # Connect to Unix server
+        emit_log(f"Connecting to Unix server {unix_config['host']}:{unix_config['port']}...")
+        ssh_client = connect_unix_server(unix_config)
+        
+        if not ssh_client:
+            emit_error("Failed to connect to Unix server")
+            return
+        
+        emit_log("Successfully connected to Unix server")
+        
+        # Execute operation based on type
+        if operation_type == 'Data Comparison':
+            execute_data_comparison(ssh_client, source_config, target_config, data)
+        elif operation_type == 'Data Load':
+            execute_data_load(ssh_client, source_config, target_config, data)
+        elif operation_type == 'Schema Generation':
+            execute_schema_generation(ssh_client, source_config, target_config, data)
+        elif operation_type == 'File Load':
+            execute_file_load(ssh_client, source_config, target_config, data)
+        elif operation_type == 'File Download':
+            execute_file_download(ssh_client, source_config, target_config, data)
+        else:
+            emit_error(f"Unknown operation type: {operation_type}")
+        
+        # Close SSH connection
+        ssh_client.close()
+        emit_log("Unix server connection closed")
+        
+    except Exception as e:
+        emit_error(f"Operation failed: {str(e)}")
+        print(f"Error in process_operation: {str(e)}")
+
+def connect_unix_server(unix_config):
+    """Connect to Unix server using paramiko"""
+    try:
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        ssh_client.connect(
+            hostname=unix_config['host'],
+            port=int(unix_config['port']),
+            username=unix_config['username'],
+            password=unix_config['password'],
+            timeout=30
+        )
+        
+        return ssh_client
+    except Exception as e:
+        print(f"SSH connection error: {str(e)}")
+        return None
+
+def execute_command(ssh_client, command):
+    """Execute command on Unix server and stream output"""
+    try:
+        emit_log(f"Executing command: {command}")
+        
+        stdin, stdout, stderr = ssh_client.exec_command(command)
+        
+        # Stream stdout
+        for line in stdout:
+            emit_log(line.strip())
+        
+        # Check for errors
+        stderr_output = stderr.read().decode()
+        if stderr_output:
+            emit_log(f"Warnings/Errors: {stderr_output}")
+        
+        exit_status = stdout.channel.recv_exit_status()
+        
+        if exit_status == 0:
+            emit_log("Command executed successfully")
+            return True
+        else:
+            emit_error(f"Command failed with exit status {exit_status}")
+            return False
+            
+    except Exception as e:
+        emit_error(f"Command execution error: {str(e)}")
+        return False
+
+def escape_shell_arg(arg):
+    """Safely escape shell arguments to handle special characters"""
+    if arg is None:
+        return "''"
+    
+    # Convert to string
+    arg_str = str(arg)
+    
+    # Use shlex.quote for proper shell escaping
+    # This handles special characters like $, #, @, %, quotes, etc.
+    return shlex.quote(arg_str)
+
+def build_command_with_args(script_path, args_dict):
+    """Build shell command with properly escaped arguments"""
+    command_parts = [script_path]
+    
+    for key, value in args_dict.items():
+        if value:  # Only add non-empty values
+            escaped_value = escape_shell_arg(value)
+            command_parts.append(f"--{key}={escaped_value}")
+    
+    return ' '.join(command_parts)
+
+def execute_data_comparison(ssh_client, source_config, target_config, data):
+    """Execute data comparison operation"""
+    try:
+        emit_log("Starting data comparison operation...")
+        
+        comparison_type = data.get('comparison-type-select', 'database-to-database')
+        table_mode = data.get('tableMode', 'single')
+        key_columns = data.get('keyColumns', '')
+        
+        emit_log(f"Comparison Type: {comparison_type}")
+        emit_log(f"Table Mode: {table_mode}")
+        
+        # Build command arguments
+        args = {
+            'comparison_type': comparison_type,
+            'table_mode': table_mode,
+            'key_columns': key_columns,
+            'source_type': source_config.get('type'),
+            'source_host': source_config.get('host'),
+            'source_port': source_config.get('port'),
+            'source_database': source_config.get('database'),
+            'source_username': source_config.get('username'),
+            'source_password': source_config.get('password'),
+            'source_table': source_config.get('table'),
+            'source_sql': source_config.get('sql'),
+            'source_file_type': source_config.get('file_type'),
+            'source_delimiter': source_config.get('delimiter'),
+            'source_file_path': source_config.get('file_path'),
+            'target_type': target_config.get('type'),
+            'target_host': target_config.get('host'),
+            'target_port': target_config.get('port'),
+            'target_database': target_config.get('database'),
+            'target_username': target_config.get('username'),
+            'target_password': target_config.get('password'),
+            'target_table': target_config.get('table'),
+            'target_sql': target_config.get('sql'),
+            'target_file_type': target_config.get('file_type'),
+            'target_delimiter': target_config.get('delimiter'),
+            'target_file_path': target_config.get('file_path')
+        }
+        
+        # Build and execute command
+        script_path = '/path/to/data_comparison.sh'
+        command = build_command_with_args(script_path, args)
+        
+        success = execute_command(ssh_client, command)
+        
+        if success:
+            report_path = f"/reports/comparison_{int(time.time())}.csv"
+            socketio.emit('operation_complete', {
+                'status': 'success',
+                'operation': 'Data Comparison',
+                'report_path': report_path
+            })
+        
+    except Exception as e:
+        emit_error(f"Data comparison failed: {str(e)}")
+
+def execute_data_load(ssh_client, source_config, target_config, data):
+    """Execute data load operation"""
+    try:
+        emit_log("Starting data load operation...")
+        
+        args = {
+            'source_type': source_config.get('type'),
+            'source_host': source_config.get('host'),
+            'source_database': source_config.get('database'),
+            'source_username': source_config.get('username'),
+            'source_password': source_config.get('password'),
+            'source_table': source_config.get('table'),
+            'target_type': target_config.get('type'),
+            'target_host': target_config.get('host'),
+            'target_database': target_config.get('database'),
+            'target_username': target_config.get('username'),
+            'target_password': target_config.get('password'),
+            'target_table': target_config.get('table'),
+            'batch_size': data.get('batchSize', '1000')
+        }
+        
+        script_path = '/path/to/data_load.sh'
+        command = build_command_with_args(script_path, args)
+        
+        success = execute_command(ssh_client, command)
+        
+        if success:
+            socketio.emit('operation_complete', {
+                'status': 'success',
+                'operation': 'Data Load'
+            })
+        
+    except Exception as e:
+        emit_error(f"Data load failed: {str(e)}")
+
+def execute_schema_generation(ssh_client, source_config, target_config, data):
+    """Execute schema generation operation"""
+    try:
+        emit_log("Starting schema generation operation...")
+        
+        args = {
+            'source_database': source_config.get('database'),
+            'source_host': source_config.get('host'),
+            'source_username': source_config.get('username'),
+            'source_password': source_config.get('password'),
+            'target_database': target_config.get('database'),
+            'schema_name': data.get('schemaName', ''),
+            'output_format': data.get('outputFormat', 'DDL')
+        }
+        
+        script_path = '/path/to/schema_generation.sh'
+        command = build_command_with_args(script_path, args)
+        
+        success = execute_command(ssh_client, command)
+        
+        if success:
+            socketio.emit('operation_complete', {
+                'status': 'success',
+                'operation': 'Schema Generation'
+            })
+        
+    except Exception as e:
+        emit_error(f"Schema generation failed: {str(e)}")
+
+def execute_file_load(ssh_client, source_config, target_config, data):
+    """Execute file load operation"""
+    try:
+        emit_log("Starting file load operation...")
+        
+        args = {
+            'file_type': source_config.get('file_type'),
+            'file_path': source_config.get('file_path'),
+            'target_database': target_config.get('database'),
+            'target_table': target_config.get('table'),
+            'target_host': target_config.get('host'),
+            'target_username': target_config.get('username'),
+            'target_password': target_config.get('password')
+        }
+        
+        script_path = '/path/to/file_load.sh'
+        command = build_command_with_args(script_path, args)
+        
+        success = execute_command(ssh_client, command)
+        
+        if success:
+            socketio.emit('operation_complete', {
+                'status': 'success',
+                'operation': 'File Load'
+            })
+        
+    except Exception as e:
+        emit_error(f"File load failed: {str(e)}")
+
+def execute_file_download(ssh_client, source_config, target_config, data):
+    """Execute file download operation"""
+    try:
+        emit_log("Starting file download operation...")
+        
+        args = {
+            'source_path': source_config.get('file_path'),
+            'target_path': target_config.get('file_path'),
+            'file_format': data.get('exportFormat', 'CSV')
+        }
+        
+        script_path = '/path/to/file_download.sh'
+        command = build_command_with_args(script_path, args)
+        
+        success = execute_command(ssh_client, command)
+        
+        if success:
+            socketio.emit('operation_complete', {
+                'status': 'success',
+                'operation': 'File Download'
+            })
+        
+    except Exception as e:
+        emit_error(f"File download failed: {str(e)}")
+
+def extract_unix_config(data):
+    """Extract Unix server configuration from request data"""
+    return {
+        'host': data.get('comparisonUnixHost') or data.get('loadUnixHost') or data.get('schemaUnixHost') or data.get('fileloadUnixHost') or data.get('filedownloadUnixHost', 'localhost'),
+        'port': data.get('comparisonUnixPort') or data.get('loadUnixPort') or data.get('schemaUnixPort') or data.get('fileloadUnixPort') or data.get('filedownloadUnixPort', '22'),
+        'username': data.get('comparisonUnixUsername') or data.get('loadUnixUsername') or data.get('schemaUnixUsername') or data.get('fileloadUnixUsername') or data.get('filedownloadUnixUsername', 'user'),
+        'password': data.get('comparisonUnixPassword') or data.get('loadUnixPassword') or data.get('schemaUnixPassword') or data.get('fileloadUnixPassword') or data.get('filedownloadUnixPassword', '')
+    }
+
+def extract_source_config(data, operation_type):
+    """Extract source configuration from request data"""
+    prefix = get_prefix_for_operation(operation_type, 'source')
+    
+    return {
+        'type': data.get(f'{prefix}Type'),
+        'host': data.get(f'{prefix}Host'),
+        'port': data.get(f'{prefix}Port'),
+        'database': data.get(f'{prefix}Database'),
+        'username': data.get(f'{prefix}Username'),
+        'password': data.get(f'{prefix}Password'),
+        'table': data.get(f'{prefix}TableName'),
+        'sql': data.get(f'{prefix}SqlQuery'),
+        'file_type': data.get(f'{prefix}FileType'),
+        'delimiter': data.get(f'{prefix}Delimiter'),
+        'file_path': data.get(f'{prefix}FilePath')
+    }
+
+def extract_target_config(data, operation_type):
+    """Extract target configuration from request data"""
+    prefix = get_prefix_for_operation(operation_type, 'target')
+    
+    return {
+        'type': data.get(f'{prefix}Type'),
+        'host': data.get(f'{prefix}Host'),
+        'port': data.get(f'{prefix}Port'),
+        'database': data.get(f'{prefix}Database'),
+        'username': data.get(f'{prefix}Username'),
+        'password': data.get(f'{prefix}Password'),
+        'table': data.get(f'{prefix}TableName'),
+        'sql': data.get(f'{prefix}SqlQuery'),
+        'file_type': data.get(f'{prefix}FileType'),
+        'delimiter': data.get(f'{prefix}Delimiter'),
+        'file_path': data.get(f'{prefix}FilePath')
+    }
+
+def get_prefix_for_operation(operation_type, side):
+    """Get field prefix based on operation type and side (source/target)"""
+    operation_prefixes = {
+        'Data Comparison': 'comparison',
+        'Data Load': 'load',
+        'Schema Generation': 'schema',
+        'File Load': 'fileload',
+        'File Download': 'filedownload'
+    }
+    
+    prefix = operation_prefixes.get(operation_type, 'comparison')
+    return f"{prefix}{side.capitalize()}"
+
+def emit_log(message):
+    """Emit log message to connected clients"""
+    timestamp = time.strftime('%H:%M:%S')
+    log_message = f"[{timestamp}] {message}"
+    socketio.emit('log', {'message': log_message})
+    print(log_message)
+
+def emit_error(error_message):
+    """Emit error message to connected clients"""
+    socketio.emit('operation_error', {'error': error_message})
+    print(f"ERROR: {error_message}")
+
+
+
+
+
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+    emit('connected', {'data': 'Connected to server'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
