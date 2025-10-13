@@ -1,0 +1,73 @@
+import subprocess, locale, re
+from typing import Dict, Tuple
+
+def _safe_decode(b: bytes) -> str:
+    if b is None:
+        return ""
+    try:
+        return b.decode("utf-8").strip()
+    except LookupError:
+        enc = locale.getpreferredencoding(False) or "utf-8"
+        return b.decode(enc, errors="ignore").strip()
+
+def _extract_value(s: str) -> str:
+    """
+    Accepts raw tool output and returns just the value.
+    Handles lines like 'User ID : xyz', 'PASSWORD=abc', or plain 'xyz'.
+    Uses the last non-empty line (common for CLI tools).
+    """
+    if not s:
+        return ""
+    line = ""
+    for L in s.splitlines():
+        L = L.strip()
+        if L:
+            line = L
+    if not line:
+        return ""
+
+    # split on ':' or '=' once if present
+    if ":" in line:
+        line = line.split(":", 1)[-1].strip()
+    elif "=" in line:
+        line = line.split("=", 1)[-1].strip()
+    return line
+
+def _run_capture(cmd: list) -> Tuple[int, str, str]:
+    """
+    Run without shell=True. Do NOT raise on non-zero rc; some tools
+    still print the value but return rc!=0.
+    """
+    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = _safe_decode(p.stdout)
+    err = _safe_decode(p.stderr)
+    return p.returncode, out, err
+
+def get_connection_details(logonmgr_file: str, dbType: str = "") -> Dict[str, str]:
+    """
+    Returns dict with keys: server, userid, password, database.
+    Values may be None if not retrievable.
+    """
+    # if your tool needs dbType, add it to the lists below as required
+    commands = {
+        "server":   [["logonmgr", "server",   logonmgr_file]],
+        "userid":   [["logonmgr", "userid",   logonmgr_file],
+                     ["logonmgr", "user", "id", logonmgr_file]],
+        "password": [["logonmgr", "password", "decrypt", logonmgr_file],
+                     ["logonmgr", "passwd",   "decrypt", logonmgr_file]],
+        "database": [["logonmgr", "database", logonmgr_file],
+                     ["logonmgr", "db",       logonmgr_file]],
+    }
+
+    result: Dict[str, str] = {}
+    for key, variants in commands.items():
+        val = ""
+        for cmd in variants:
+            rc, out, err = _run_capture(cmd)
+            raw = out if out else err          # some tools print only to stderr
+            val = _extract_value(raw)
+            if val:                            # got something usable
+                break
+        result[key] = val or None
+
+    return result
