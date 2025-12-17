@@ -1,0 +1,171 @@
+# pip install pymongo pandas openpyxl
+import copy
+import pandas as pd
+from pymongo import MongoClient
+from datetime import datetime
+
+# ----------------------------
+# CONFIG
+# ----------------------------
+MONGO_URI = "mongodb://localhost:27017"
+DB_NAME = "your_db"
+SRC_COLL = "source_collection"
+TGT_COLL = "testdata_collection"
+
+EXCEL_PATH = "/path/to/file.xlsx"   # 🔴 EXCEL FILE
+EXCEL_SHEET = "Sheet1"              # 🔴 Sheet name
+
+SOURCE_BATCH_ID = "BATCH_001"
+BATCH_ID_PATH = "batchId"
+
+SKIP_BLANKS = True
+BATCH_SIZE = 500
+
+# ----------------------------
+# HELPERS (UNCHANGED)
+# ----------------------------
+def extract_paths(obj, parent=""):
+    paths = set()
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "_id":
+                continue
+            p = f"{parent}.{k}" if parent else k
+            paths.add(p)
+            paths.update(extract_paths(v, p))
+    elif isinstance(obj, list):
+        for item in obj:
+            paths.update(extract_paths(item, parent))
+    return paths
+
+
+def set_by_path(doc, path, value):
+    parts = path.split(".")
+    cur = doc
+    for i, part in enumerate(parts):
+        last = i == len(parts) - 1
+        if part.isdigit():
+            idx = int(part)
+            if not isinstance(cur, list):
+                return
+            while len(cur) <= idx:
+                cur.append({})
+            if last:
+                cur[idx] = value
+            else:
+                if cur[idx] is None:
+                    cur[idx] = {}
+                cur = cur[idx]
+        else:
+            if not isinstance(cur, dict):
+                return
+            if last:
+                cur[part] = value
+            else:
+                if part not in cur or cur[part] is None:
+                    cur[part] = {}
+                cur = cur[part]
+
+
+def coerce(v):
+    if v is None:
+        return None
+    if isinstance(v, str):
+        s = v.strip()
+        if s == "":
+            return ""
+        if s == "true":
+            return True
+        if s == "false":
+            return False
+        try:
+            if "." in s:
+                return float(s)
+            return int(s)
+        except Exception:
+            return s
+    return v
+
+
+def build_case_sensitive_mapping(doc, excel_cols):
+    all_paths = extract_paths(doc)
+    mapping = {}
+    for col in excel_cols:
+        mapping[col] = None
+        for p in all_paths:
+            if p.split(".")[-1] == col:   # EXACT match
+                mapping[col] = p
+                break
+    return mapping
+
+
+def mongo_stream_by_batch(coll, batch_path, batch_value):
+    query = {batch_path: batch_value}
+    while True:
+        cursor = coll.find(query, no_cursor_timeout=True).batch_size(200)
+        try:
+            for doc in cursor:
+                yield doc
+        finally:
+            cursor.close()
+
+# ----------------------------
+# MAIN
+# ----------------------------
+client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+src = db[SRC_COLL]
+tgt = db[TGT_COLL]
+
+# 🔴 READ EXCEL INSTEAD OF CSV
+df = pd.read_excel(EXCEL_PATH, sheet_name=EXCEL_SHEET, dtype=str).fillna("")
+excel_cols = list(df.columns)
+
+doc_gen = mongo_stream_by_batch(src, BATCH_ID_PATH, SOURCE_BATCH_ID)
+
+batch = []
+inserted = 0
+TARGET_BATCH_ID = f"{SOURCE_BATCH_ID}-test"
+
+for row_idx, row in df.iterrows():
+    src_doc = next(doc_gen)
+    new_doc = copy.deepcopy(src_doc)
+    new_doc.pop("_id", None)
+
+    col_to_path = build_case_sensitive_mapping(src_doc, excel_cols)
+
+    # 🔴 Replace values from EXCEL
+    for col in excel_cols:
+        path = col_to_path.get(col)
+        if not path:
+            continue
+
+        raw = row[col]
+        if SKIP_BLANKS and isinstance(raw, str) and raw.strip() == "":
+            continue
+
+        set_by_path(new_doc, path, coerce(raw))
+
+    # 🔴 Replace batchId in target
+    set_by_path(new_doc, BATCH_ID_PATH, TARGET_BATCH_ID)
+
+    new_doc["_test_meta"] = {
+        "excel_row": int(row_idx),
+        "source_batchId": SOURCE_BATCH_ID,
+        "target_batchId": TARGET_BATCH_ID,
+        "source_doc_id": str(src_doc.get("_id")),
+        "created_at": datetime.utcnow()
+    }
+
+    batch.append(new_doc)
+
+    if len(batch) >= BATCH_SIZE:
+        tgt.insert_many(batch)
+        inserted += len(batch)
+        batch = []
+
+if batch:
+    tgt.insert_many(batch)
+    inserted += len(batch)
+
+print(f"Done ✔ Excel rows processed: {len(df)} | Inserted: {inserted}")
